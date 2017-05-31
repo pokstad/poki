@@ -1,24 +1,26 @@
-package poki
+package memory
 
 import (
 	"context"
 	"sync"
 
+	"github.com/pokstad/poki"
+	"github.com/pokstad/poki/storage"
 	uuid "github.com/satori/go.uuid"
 )
 
 type MemoryStorage struct {
 	l sync.RWMutex
-	m map[string]PostRev // revisions mapped by post path
+	m map[string]poki.PostRev // revisions mapped by post path
 }
 
 func NewMemoryStorage() *MemoryStorage {
 	return &MemoryStorage{
-		m: map[string]PostRev{},
+		m: map[string]poki.PostRev{},
 	}
 }
 
-func (ms *MemoryStorage) Create(_ context.Context, p Post) (PostRev, error) {
+func (ms *MemoryStorage) Create(_ context.Context, p poki.Post) (poki.PostRev, error) {
 	// check if it already exists
 	ms.l.RLock()
 	_, ok := ms.m[p.Path]
@@ -26,11 +28,11 @@ func (ms *MemoryStorage) Create(_ context.Context, p Post) (PostRev, error) {
 
 	if ok {
 		// It already exists :(
-		return PostRev{}, Error{Code: ErrAlreadyExists}
+		return poki.PostRev{}, storage.Error{Code: storage.ErrAlreadyExists}
 	}
 
 	// add it
-	rev := PostRev{
+	rev := poki.PostRev{
 		Post:       p,
 		RevisionID: uuid.NewV4().String(), // random ID
 	}
@@ -42,23 +44,23 @@ func (ms *MemoryStorage) Create(_ context.Context, p Post) (PostRev, error) {
 	return rev, nil
 }
 
-func (ms *MemoryStorage) Read(_ context.Context, path string) (PostRev, error) {
+func (ms *MemoryStorage) Read(_ context.Context, path string) (poki.PostRev, error) {
 	ms.l.RLock()
 	post, ok := ms.m[path]
 	ms.l.RUnlock()
 
 	if !ok {
-		return PostRev{}, Error{Code: ErrNotFound}
+		return poki.PostRev{}, storage.Error{Code: storage.ErrNotFound}
 	}
 
 	return post, nil
 }
 
-func (ms *MemoryStorage) Update(_ context.Context, newPost Post, prev PostRev) (PostRev, error) {
+func (ms *MemoryStorage) Update(_ context.Context, newPost poki.Post, prev poki.PostRev) (poki.PostRev, error) {
 	// validate params
 	if newPost.Path != prev.Path {
 		// invalid params
-		return PostRev{}, Error{Code: ErrInvalidParams}
+		return poki.PostRev{}, storage.Error{Code: storage.ErrInvalidParams}
 	}
 
 	// fetch current revision
@@ -70,13 +72,13 @@ func (ms *MemoryStorage) Update(_ context.Context, newPost Post, prev PostRev) (
 
 	// exists and revs mismatch
 	case ok && currentRev.RevisionID != prev.RevisionID:
-		return PostRev{}, Error{
-			Code: ErrConflict,
+		return poki.PostRev{}, storage.Error{
+			Code: storage.ErrConflict,
 		}
 
 	// exists and revs match
 	case ok && currentRev.RevisionID == prev.RevisionID:
-		newRev := PostRev{
+		newRev := poki.PostRev{
 			Post:       newPost,
 			RevisionID: uuid.NewV4().String(), // random ID
 		}
@@ -85,11 +87,11 @@ func (ms *MemoryStorage) Update(_ context.Context, newPost Post, prev PostRev) (
 		ms.m[prev.Path] = newRev
 		ms.l.Unlock()
 
-		return PostRev{}, nil
+		return poki.PostRev{}, nil
 
 	// doesn't exist
 	case !ok:
-		newRev := PostRev{
+		newRev := poki.PostRev{
 			Post:       newPost,
 			RevisionID: uuid.NewV4().String(), // random ID
 		}
@@ -101,9 +103,9 @@ func (ms *MemoryStorage) Update(_ context.Context, newPost Post, prev PostRev) (
 		return newRev, nil
 	}
 
-	return PostRev{}, nil
+	return poki.PostRev{}, nil
 }
 
-func (ms *MemoryStorage) Remove(context.Context, PostRev) error {
+func (ms *MemoryStorage) Remove(_ context.Context, _ poki.PostRev) error {
 	return nil
 }

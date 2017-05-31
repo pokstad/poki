@@ -1,12 +1,16 @@
-package poki
+package storage
 
-import "context"
+import (
+	"context"
+
+	"github.com/pokstad/poki"
+)
 
 type Storage interface {
-	Create(context.Context, Post) (PostRev, error)
-	Read(context.Context, string) (PostRev, error)
-	Update(context.Context, Post, PostRev) (PostRev, error)
-	Remove(context.Context, PostRev) error
+	Create(context.Context, poki.Post) (poki.PostRev, error)
+	Read(context.Context, string) (poki.PostRev, error)
+	Update(context.Context, poki.Post, poki.PostRev) (poki.PostRev, error)
+	Remove(context.Context, poki.PostRev) error
 }
 
 type errCode int

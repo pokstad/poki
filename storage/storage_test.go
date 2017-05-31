@@ -1,4 +1,4 @@
-package poki_test
+package storage_test
 
 import (
 	"context"
@@ -7,6 +7,8 @@ import (
 	"reflect"
 
 	"github.com/pokstad/poki"
+	"github.com/pokstad/poki/storage"
+	"github.com/pokstad/poki/storage/memory"
 )
 
 var mdP1 = poki.Post{
@@ -34,10 +36,10 @@ func TestMemoryStorage(t *testing.T) {
 	ctx := context.Background()
 
 	tableTests := []struct {
-		Storage poki.Storage
+		Storage storage.Storage
 	}{
 		{
-			Storage: poki.NewMemoryStorage(),
+			Storage: memory.NewMemoryStorage(),
 		},
 	}
 
