@@ -1,6 +1,6 @@
 # Poki
 
-Poki is a minimal markdown wiki system written in Go that enables teams to write documentation in concert.
+Poki is a gRPC and protobuf based database inspired by CouchDB.
 
 ## Features
 
@@ -8,13 +8,10 @@ NONE!
 
 ## Roadmap
 
-- Exposes a REST API to manage markdown posts
-- Default underlying storage system utilizes the filesystem and git to manage revisions of the wiki
-- Ensures serialized writes to individual posts while allowing concurrent reads
+- Store protobuf messages via BoltDB.
+- Implement all CouchApp functions (validator, updater, map, reduce, rereduce, transform).
 
 ### FAQ
 
 - Why?
-  - Hardly any wiki systems utilize markdown, which is the main markup language of choice among programmers.
-- Why filesystem based persistence?
-  - So that existing static site generators (e.g. Hugo) can be used to render the markdown into HTML.
+  - JSON has some issues with databases. Protobuf makes document storage stricter and easier to manage at the same time.

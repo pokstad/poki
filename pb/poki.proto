@@ -1,79 +1,18 @@
 syntax = "proto3";
 
-package pokstad.poki;
+import "google/protobuf/any.proto";
 
 option go_package = "github.com/pokstad/poki/pb";
 
-import "google/protobuf/timestamp.proto";
-import "google/api/annotations.proto";
-
-message Post {
-    message MetaData {
-         google.protobuf.Timestamp updated = 1;
-         string Title = 2;
-    }
-
-    bytes raw = 1; // content of post
-    MetaData meta = 2; // info about info
-    string path = 3; // URL path
-
+message Document {
+  string id = 1;
+  google.protobuf.Any payload = 2;
 }
 
-message Rev {
-    string revision_id = 1;
-}
-
-message PathRev {
-    string path = 1;
-    string revision_id = 2;
-}
-
-message PostRev {
-    Rev rev = 1;
-    Post post = 2;
-}
-
-message CreateResponse {
-    Rev rev = 1;
-}
-
-message ReadResponse {
-    PostRev post_rev = 1;
-}
-
-message UpdateResponse {
-    Rev rev = 1;
-}
-
-message DeleteResponse {
-    // stub
+message DocumentRevision {
+  string rev = 1;
 }
 
 service Poki {
-    rpc Create (Post) returns (CreateResponse) {
-        option (google.api.http) = {
-            post: "/{path}"
-            body: "*"
-        };
-    }
-
-    rpc Read(Post) returns (ReadResponse) {
-        option (google.api.http) = {
-            get: "/{path}"
-            //body: "*"
-        };
-    }
-
-    rpc Update (PathRev) returns (UpdateResponse) {
-        option (google.api.http) = {
-            put: "/{path}/{revision_id}"
-            body: "*"
-        };
-    }
-
-    rpc Delete (PathRev) returns (DeleteResponse) {
-        option (google.api.http) = {
-            delete: "/{path}/{revision_id}"
-        };
-    }
+  rpc CreateDoc (Document) returns (DocumentRevision);
 }
